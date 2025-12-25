@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OS Lab Exam – Quick Revision</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body {
+        background: #0f172a;
+        color: #e5e7eb;
+        font-family: monospace;
+        padding: 16px;
+        line-height: 1.5;
+    }
+    h1 {
+        text-align: center;
+        color: #38bdf8;
+    }
+    h2 {
+        color: #facc15;
+        border-bottom: 1px solid #334155;
+        padding-bottom: 4px;
+        margin-top: 32px;
+    }
+    pre {
+        background: #020617;
+        padding: 14px;
+        overflow-x: auto;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+    .tip {
+        color: #94a3b8;
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>OS Lab Exam – Last Minute Revision</h1>
+
+<div class="tip">
+📌 All programs are exactly your own code.  
+📌 Only wrapped for easy revision on mobile.  
+📌 Read logic + remember viva points.
+</div>
+
+<!-- ===================== F1 ===================== -->
+<h2>F1.c – fork() and wait()</h2>
+<pre>
+#include&lt;stdio.h&gt;
+#include&lt;unistd.h&gt;
+#include&lt;sys/wait.h&gt;
+
+int main(){
+        int pid  = fork();
+
+        if (pid &lt; 0){
+                printf("Failed\n");
+                return 0;
+        }
+        else if(pid == 0){
+                printf("Child Process\n");
+                printf("Pid of Child: %d\n", getpid());
+                execlp("ls","ls", "-1", NULL);
+        }
+        else {
+                printf("Waiting for child to terminate\n");
+                wait(NULL);
+                printf("Parent Process \nits id is: %d\n", getpid());
+        }
+        return 0;
+}
+</pre>
+
+<!-- ===================== FCFS ===================== -->
+<h2>F2FCFS.c – FCFS Scheduling</h2>
+<pre>
+#include&lt;stdio.h&gt;
+
+int main(){
+        int n;
+        scanf("%d", &n);
+        int pid[n], bt[n], wt[n], tat[n];
+
+        for(int i = 0; i &lt; n; i++){
+                scanf("%d", &bt[i]);
+                pid[i] = i + 1;
+        }
+        wt[0] = 0;
+        for(int i = 1; i &lt; n ; i++){
+                wt[i] = bt[i-1] + wt[i-1];
+        }
+        float avgtat = 0;
+        float avgwt = 0;
+
+        printf("Pid\tBt\tWt\tTat\n");
+        for(int i = 0; i&lt; n; i++){
+                int tat = bt[i] + wt[i];
+                printf("%d\t%d\t%d\t%d\n", pid[i], bt[i], wt[i], tat);
+                avgtat += tat;
+                avgwt += wt[i];
+        }
+        printf("Avg Tat %.2f", avgtat/n);
+        printf("Avg Wt %.2f", avgwt/n);
+}
+</pre>
+
+<!-- ===================== SJF ===================== -->
+<h2>F2SJF.c – Shortest Job First</h2>
+<pre>
+#include&lt;stdio.h&gt;
+int main(){
+        int n;
+        scanf("%d",&n);
+
+        int bt[n], wt[n], tat[n], pid[n];
+        for(int i = 0; i &lt; n; i++){
+                scanf("%d", &bt[i]);
+                pid[i] = i+1;
+        }
+        for(int i = 0; i &lt; n-1;i++){
+                for(int j = 0; j &lt; n - i - 1; j++){
+                        if(bt[j] &gt; bt[j+1]){
+                                int temp = bt[j];
+                                bt[j] = bt[j+1];
+                                bt[j+1] = temp;
+                                temp = pid[j];
+                                pid[j] = pid[j+1];
+                                pid[j+1] = temp;
+                        }
+                }
+        }
+        wt[0] = 0;
+        for(int i = 1; i &lt; n; i++){
+                wt[i] = wt[i-1] + bt[i-1];
+        }
+
+        printf("Pid\tBt\tWt\tTat\n");
+        for(int i = 0; i&lt; n; i++){
+                int tat = bt[i] + wt[i];
+                printf("%d\t%d\t%d\t%d\n", pid[i], bt[i], wt[i], tat);
+        }
+}
+</pre>
+
+<!-- ===================== FIFO ===================== -->
+<h2>F3FIFO.c – FIFO Page Replacement</h2>
+<pre>
+#include&lt;stdio.h&gt;
+
+int main(){
+        int np, nf;
+        scanf("%d %d", &np, &nf);
+
+        int pages[np], frames[nf];
+
+        for(int i = 0; i &lt; np; i++)
+                scanf("%d", &pages[i]);
+
+        for(int i = 0; i &lt; nf; i++)
+                frames[i] = -1;
+
+        int pagefault = 0, pos = 0;
+
+        for(int i = 0; i &lt; np; i++){
+                int found  = 0;
+                for(int j = 0; j &lt; nf; j++){
+                        if(frames[j] == pages[i]){
+                                found = 1;
+                                break;
+                        }
+                }
+                if(!found){
+                        frames[pos] = pages[i];
+                        pos = (pos + 1) % nf;
+                        pagefault++;
+                }
+                printf("After Accessing : %d ", pages[i]);
+                for(int j = 0; j &lt; nf; j++)
+                        printf("%d ", frames[j]);
+                printf("\n");
+        }
+        printf("Total Page faults %d\n", pagefault);
+}
+</pre>
+
+<!-- ===================== PRIORITY ===================== -->
+<h2>F4PP.c – Priority Scheduling</h2>
+<pre>
+#include&lt;stdio.h&gt;
+int main(){
+        int n;
+        scanf("%d", &n);
+        int pid[n], p[n], bt[n], wt[n];
+
+        for(int i = 0; i &lt; n; i++){
+                scanf("%d", &bt[i]);
+                scanf("%d", &p[i]);
+                pid[i] = i+1;
+        }
+
+        for(int i = 0; i &lt; n - 1;i++){
+                for(int j = 0; j &lt; n - i - 1; j++){
+                        if(p[j] &gt; p[j+1]){
+                                int temp =  p[j];
+                                p[j] = p[j+1];
+                                p[j+1] = temp;
+
+                                temp =  bt[j];
+                                bt[j] = bt[j+1];
+                                bt[j+1] = temp;
+
+                                temp =  pid[j];
+                                pid[j] = pid[j+1];
+                                pid[j+1] = temp;
+                        }
+                }
+        }
+
+        wt[0] = 0;
+        for(int i = 1; i &lt; n ; i++)
+                wt[i] = bt[i-1] + wt[i-1];
+
+        printf("Pid\tBt\tWt\tTat\n");
+        for(int i = 0; i&lt; n; i++){
+                int tat = bt[i] + wt[i];
+                printf("%d\t%d\t%d\t%d\n", pid[i], bt[i], wt[i], tat);
+        }
+}
+</pre>
+
+<!-- ===================== SEMAPHORE ===================== -->
+<h2>F5Semaphore.c – Producer Consumer</h2>
+<pre>
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+int mutex = 1;
+int full = 0;
+int empty = 10;
+int x  = 0;
+
+void producer(){
+        if(mutex == 1 && empty &gt; 0){
+                mutex = 0;
+                x++;
+                full++;
+                empty--;
+                printf("Producer Produced %d item\n", x);
+                mutex++;
+        }
+        else
+                printf("Buffer is full\n");
+}
+void consumer(){
+        if(mutex == 1 && full &gt; 0){
+                mutex = 0;
+                printf("Consumer Consumed %d item\n", x);
+                x--;
+                full--;
+                empty++;
+                mutex = 1;
+        }
+        else
+                printf("Buffer is empty\n");
+}
+int main(){
+        int choice;
+        while(1){
+                scanf("%d",&choice);
+                switch(choice){
+                        case 1: producer(); break;
+                        case 2: consumer(); break;
+                        case 3: exit(0);
+                }
+        }
+}
+</pre>
+
+<!-- ===================== RR ===================== -->
+<h2>F6RR.c – Round Robin</h2>
+<pre>
+#include&lt;stdio.h&gt;
+
+int main(){
+        int n;
+        scanf("%d", &n);
+        int pid[n], bt[n], rt[n], wt[n], tat[n];
+
+        for(int i = 0; i &lt; n; i++){
+                scanf("%d", &bt[i]);
+                rt[i] = bt[i];
+                pid[i] = i + 1;
+        }
+        int q;
+        scanf("%d", &q);
+
+        int time = 0, done = 0;
+        while(done &lt; n){
+                for(int i = 0; i &lt; n; i++){
+                        if(rt[i] &gt; 0){
+                                if(rt[i] &gt; q){
+                                        time += q;
+                                        rt[i] -= q;
+                                } else {
+                                        time += rt[i];
+                                        rt[i] = 0;
+                                        tat[i] = time;
+                                        done++;
+                                }
+                        }
+                }
+        }
+
+        for(int i = 0; i &lt; n; i++){
+                wt[i] = tat[i] - bt[i];
+                printf("%d %d %d %d\n", pid[i], bt[i], wt[i], tat[i]);
+        }
+}
+</pre>
+
+<!-- ===================== LRU ===================== -->
+<h2>F7LRU.c – LRU Page Replacement</h2>
+<pre>
+#include&lt;stdio.h&gt;
+int main(){
+        int np, nf;
+        scanf("%d %d", &np, &nf);
+
+        int pages[np], frames[nf], lastUsed[nf];
+
+        for(int i = 0; i &lt; np; i++)
+                scanf("%d", &pages[i]);
+
+        for(int i = 0; i &lt; nf; i++){
+                frames[i] = -1;
+                lastUsed[i] = -1;
+        }
+
+        int pagefault = 0;
+        for(int i = 0; i &lt; np; i++){
+                int found = 0;
+                for(int j = 0; j &lt; nf; j++){
+                        if(frames[j] == pages[i]){
+                                found = 1;
+                                lastUsed[j] = i;
+                                break;
+                        }
+                }
+                if(!found){
+                        int replace = 0;
+                        for(int j = 1; j &lt; nf; j++)
+                                if(lastUsed[j] &lt; lastUsed[replace])
+                                        replace = j;
+                        frames[replace] = pages[i];
+                        lastUsed[replace] = i;
+                        pagefault++;
+                }
+        }
+        printf("Total pagefaults %d\n", pagefault);
+}
+</pre>
+
+<!-- ===================== MEMORY ===================== -->
+<h2>F8Memory.c – First / Best / Worst Fit</h2>
+<pre>
+#include &lt;stdio.h&gt;
+void worstFit(int process[], int n, int partition[], int m){
+    int allocation[n];
+    for(int i=0;i&lt;n;i++) allocation[i]=-1;
+
+    for(int i=0;i&lt;n;i++){
+        int worstIndex=-1;
+        for(int j=0;j&lt;m;j++){
+            if(partition[j]&gt;=process[i]){
+                if(worstIndex==-1 || partition[j]&gt;partition[worstIndex])
+                    worstIndex=j;
+            }
+        }
+        if(worstIndex!=-1){
+            allocation[i]=worstIndex;
+            partition[worstIndex]-=process[i];
+        }
+    }
+
+    for(int i=0;i&lt;n;i++){
+        if(allocation[i]!=-1)
+            printf("Process %d allocated at %d\n",i+1,allocation[i]+1);
+        else
+            printf("Process %d not allocated\n",i+1);
+    }
+}
+
+int main(){
+    int p[]={500,200,300};
+    int size[]={250,600,300,400};
+    worstFit(p,3,size,4);
+}
+</pre>
+
+</body>
+</html>
